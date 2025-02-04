@@ -1,0 +1,44 @@
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: "lacrei"
+      POSTGRES_USER: "lacrei"
+      POSTGRES_PASSWORD: "lacrei"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - lacrei_network
+    
+
+
+  web:
+    build: .
+    command: sh -c "wait-for-it db:5432 -- gunicorn --bind 0.0.0.0:8000 core.wsgi"  # Comando único
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      - DEBUG=False
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0  # Remova as aspas
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=lacrei
+      - POSTGRES_USER=lacrei
+      - POSTGRES_PASSWORD=lacrei
+      - PYTHONPATH=/app
+      - SECRET_KEY=${SECRET_KEY}
+    networks:
+      - lacrei_network  # Corrigido indentação
+
+volumes:
+  postgres_data:
+
+networks:
+  lacrei_network:
+    driver: bridge
