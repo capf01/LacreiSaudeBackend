@@ -1,44 +1,44 @@
-
+ 
 services:
   db:
-    image: postgres:13
+    image: postgres:13  # Usa a imagem oficial do PostgreSQL versão 13
     environment:
-      POSTGRES_DB: "lacrei"
-      POSTGRES_USER: "lacrei"
-      POSTGRES_PASSWORD: "lacrei"
+      POSTGRES_DB: "lacrei"  # Nome do banco de dados
+      POSTGRES_USER: "lacrei"  # Nome do usuário do banco
+      POSTGRES_PASSWORD: "lacrei"  # Senha do banco de dados
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - postgres_data:/var/lib/postgresql/data/  # Persiste os dados do banco para evitar perda após reiniciar o container
     networks:
-      - lacrei_network
-    
-
+      - lacrei_network  # Conecta o serviço ao network definido abaixo, permitindo comunicação entre os serviços
 
   web:
-    build: .
-    command: sh -c "wait-for-it db:5432 -- gunicorn --bind 0.0.0.0:8000 core.wsgi"  # Comando único
+    build: .  # Constrói a imagem a partir do Dockerfile no diretório atual
+    command: sh -c "wait-for-it db:5432 -- gunicorn --bind 0.0.0.0:8000 core.wsgi"  
+    # Aguarda o banco de dados estar disponível antes de iniciar o Gunicorn (servidor WSGI para Django)
+    
     volumes:
-      - .:/app
+      - .:/app  # Monta o diretório do projeto no container para desenvolvimento
     ports:
-      - "8000:8000"
+      - "8000:8000"  # Expõe a aplicação Django na porta 8000 do host
     depends_on:
-      - db
+      - db  # Define que este serviço depende do banco de dados estar rodando antes de iniciar
     env_file:
-      - .env
+      - .env  # Carrega variáveis de ambiente do arquivo .env
     environment:
-      - DEBUG=False
-      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0  # Remova as aspas
-      - POSTGRES_HOST=db
-      - POSTGRES_DB=lacrei
-      - POSTGRES_USER=lacrei
-      - POSTGRES_PASSWORD=lacrei
-      - PYTHONPATH=/app
-      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=False  # Desativa o modo debug do Django em produção
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0  # Define os hosts permitidos
+      - POSTGRES_HOST=db  # Define o host do banco de dados (referência ao serviço "db")
+      - POSTGRES_DB=lacrei  # Nome do banco de dados
+      - POSTGRES_USER=lacrei  # Usuário do banco
+      - POSTGRES_PASSWORD=lacrei  # Senha do banco
+      - PYTHONPATH=/app  # Define o caminho do código Python no container
+      - SECRET_KEY=${SECRET_KEY}  # Usa a chave secreta definida no .env
     networks:
-      - lacrei_network  # Corrigido indentação
+      - lacrei_network  # Conecta ao mesmo network do banco de dados para permitir comunicação
 
 volumes:
-  postgres_data:
+  postgres_data:  # Define um volume para persistir os dados do banco de dados
 
 networks:
   lacrei_network:
-    driver: bridge
+    driver: bridge  # Define uma rede do tipo bridge para permitir comunicação entre os containers
