@@ -1,33 +1,41 @@
 import os
 from dotenv import load_dotenv
 
-# Carregar variáveis de ambiente do arquivo .env
+# Carregar variáveis de ambiente
 load_dotenv()
 
-# Configurações básicas
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+# Segurança
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY não encontrado no ambiente!")
 
-# Defina ALLOWED_HOSTS
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-# Configurações do banco de dados
+# Configurações de segurança recomendadas para produção
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Banco de Dados
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'lacrei'),  # Nome do banco de dados
-        'USER': os.getenv('POSTGRES_USER', 'lacrei'),  # Nome do usuário do PostgreSQL
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'lacrei'),  # Senha do usuário
-        'HOST': os.getenv('POSTGRES_HOST', 'db'),  # Nome do serviço no docker-compose.yml
-        'PORT': os.getenv('POSTGRES_PORT', '5432'),  # Porta do PostgreSQL
+        'NAME': os.getenv('POSTGRES_DB', 'lacrei'),
+        'USER': os.getenv('POSTGRES_USER', 'lacrei'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'lacrei'),
+        'HOST': os.getenv('POSTGRES_HOST', 'db'),
+        'PORT': os.getenv('POSTGRES_PORT', '5432'),
+        'CONN_MAX_AGE': 600,  # Mantém conexões abertas por mais tempo para melhorar desempenho
     }
 }
 
 # Configuração do ROOT_URLCONF
 ROOT_URLCONF = 'core.urls'
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'vixyepw(_q^!%@xq8s(xyqk*wt1!2+w-##=-o0@5!dsdw(-%5=')
-
-# Configurações de aplicativos instalados
+# Aplicações Instaladas
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,15 +43,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',  # Adicionado suporte ao Django REST Framework
+    'rest_framework',
+    'corsheaders',  # Adicionando suporte a CORS
     'core',
     'consultas',
 ]
 
-# Configurações de middleware
+# Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Middleware de CORS
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -51,7 +61,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Configurações de templates
+# Configuração do CORS
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+
+# Configuração de Templates
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -68,16 +81,17 @@ TEMPLATES = [
     },
 ]
 
-# Configurações de arquivos estáticos
+# Configuração de Arquivos Estáticos
 STATIC_URL = 'static/'
 
-# Configuração do REST Framework
+# Configuração do Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',  # Apenas usuários autenticados podem acessar a API
     ),
 }
+
