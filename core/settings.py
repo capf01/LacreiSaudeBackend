@@ -1,12 +1,14 @@
-# settings.py
-
 import os
+from dotenv import load_dotenv
+
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
 
 # Configurações básicas
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 # Defina ALLOWED_HOSTS
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Configurações do banco de dados
 DATABASES = {
@@ -23,8 +25,7 @@ DATABASES = {
 # Configuração do ROOT_URLCONF
 ROOT_URLCONF = 'core.urls'
 
-SECRET_KEY = 'vixyepw(_q^!%@xq8s(xyqk*wt1!2+w-##=-o0@5!dsdw(-%5='
-
+SECRET_KEY = os.getenv('SECRET_KEY', 'vixyepw(_q^!%@xq8s(xyqk*wt1!2+w-##=-o0@5!dsdw(-%5=')
 
 # Configurações de aplicativos instalados
 INSTALLED_APPS = [
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',  # Adicionado suporte ao Django REST Framework
     'core',
     'consultas',
 ]
@@ -68,3 +70,14 @@ TEMPLATES = [
 
 # Configurações de arquivos estáticos
 STATIC_URL = 'static/'
+
+# Configuração do REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
+}

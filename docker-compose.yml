@@ -1,44 +1,44 @@
- 
 services:
   db:
-    image: postgres:13  # Usa a imagem oficial do PostgreSQL versão 13
+    image: postgres:13  # Usa a imagem oficial do PostgreSQL, versão 13.
     environment:
-      POSTGRES_DB: "lacrei"  # Nome do banco de dados
-      POSTGRES_USER: "lacrei"  # Nome do usuário do banco
-      POSTGRES_PASSWORD: "lacrei"  # Senha do banco de dados
+      POSTGRES_DB: "lacrei"       # Nome do banco de dados que será criado.
+      POSTGRES_USER: "lacrei"     # Nome do usuário com acesso ao banco.
+      POSTGRES_PASSWORD: "lacrei" # Senha definida para o usuário do banco.
     volumes:
-      - postgres_data:/var/lib/postgresql/data/  # Persiste os dados do banco para evitar perda após reiniciar o container
+      - postgres_data:/var/lib/postgresql/data/  # Volume que persiste os dados do banco para evitar perda após reiniciar o container.
     networks:
-      - lacrei_network  # Conecta o serviço ao network definido abaixo, permitindo comunicação entre os serviços
+      - lacrei_network  # Conecta o serviço à rede 'lacrei_network' para permitir a comunicação entre os containers.
 
   web:
-    build: .  # Constrói a imagem a partir do Dockerfile no diretório atual
+    build: .  # Constrói a imagem a partir do Dockerfile localizado no diretório atual.
     command: sh -c "wait-for-it db:5432 -- gunicorn --bind 0.0.0.0:8000 core.wsgi"  
-    # Aguarda o banco de dados estar disponível antes de iniciar o Gunicorn (servidor WSGI para Django)
+    # Utiliza o 'wait-for-it' para aguardar o serviço do banco (db) estar disponível antes de iniciar o servidor Gunicorn,
+    # garantindo que a aplicação não tente se conectar ao banco antes que ele esteja pronto.
     
     volumes:
-      - .:/app  # Monta o diretório do projeto no container para desenvolvimento
+      - .:/app  # Monta o diretório do projeto no container, permitindo sincronização de alterações durante o desenvolvimento.
     ports:
-      - "8000:8000"  # Expõe a aplicação Django na porta 8000 do host
+      - "8000:8000"  # Mapeia a porta 8000 do container para a porta 8000 do host, permitindo acesso à aplicação.
     depends_on:
-      - db  # Define que este serviço depende do banco de dados estar rodando antes de iniciar
+      - db  # Garante que o serviço 'db' esteja em execução antes de iniciar o serviço 'web'.
     env_file:
-      - .env  # Carrega variáveis de ambiente do arquivo .env
+      - .env  # Carrega as variáveis de ambiente definidas no arquivo .env.
     environment:
-      - DEBUG=False  # Desativa o modo debug do Django em produção
-      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0  # Define os hosts permitidos
-      - POSTGRES_HOST=db  # Define o host do banco de dados (referência ao serviço "db")
-      - POSTGRES_DB=lacrei  # Nome do banco de dados
-      - POSTGRES_USER=lacrei  # Usuário do banco
-      - POSTGRES_PASSWORD=lacrei  # Senha do banco
-      - PYTHONPATH=/app  # Define o caminho do código Python no container
-      - SECRET_KEY=${SECRET_KEY}  # Usa a chave secreta definida no .env
+      - DEBUG=False  # Desativa o modo debug, adequado para ambientes de produção.
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0  # Define os hosts permitidos para acesso à aplicação.
+      - POSTGRES_HOST=db  # Define o host do banco de dados, referenciando o serviço 'db'.
+      - POSTGRES_DB=lacrei  # Nome do banco de dados utilizado pela aplicação.
+      - POSTGRES_USER=lacrei  # Usuário para conexão com o banco.
+      - POSTGRES_PASSWORD=lacrei  # Senha do usuário do banco.
+      - PYTHONPATH=/app  # Define o caminho do código Python dentro do container.
+      - SECRET_KEY=${SECRET_KEY}  # Utiliza a chave secreta definida no arquivo .env para a segurança do Django.
     networks:
-      - lacrei_network  # Conecta ao mesmo network do banco de dados para permitir comunicação
+      - lacrei_network  # Conecta o serviço 'web' à mesma rede que o 'db', permitindo a comunicação entre eles.
 
 volumes:
-  postgres_data:  # Define um volume para persistir os dados do banco de dados
+  postgres_data:  # Volume utilizado para persistir os dados do PostgreSQL, garantindo que os dados não sejam perdidos com reinicializações.
 
 networks:
   lacrei_network:
-    driver: bridge  # Define uma rede do tipo bridge para permitir comunicação entre os containers
+    driver: bridge  # Define o driver 'bridge' para a rede, que possibilita a comunicação interna entre os containers.
