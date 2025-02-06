@@ -1,0 +1,64 @@
+# Ambiente Virtual
+venv/
+.venv/
+env/
+ENV/
+
+# Arquivos de Configuração Local
+.env
+.env.local
+.env.*.local
+
+# Cache e dependências
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Banco de Dados SQLite
+*.sqlite3
+*.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs e arquivos de sistema
+*.log
+*.sql
+*.sqlite
+*.pot
+*.pyc
+*.db-journal
+*.pid
+*.gz
+*.tgz
+*.zip
+*.rar
+*.7z
+
+ 
+# Arquivos gerados pelo Poetry
+poetry.lock
+.pytest_cache/
+.coverage
+htmlcov/
